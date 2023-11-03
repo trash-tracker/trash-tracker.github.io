@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Flatmates Trash Tracker</title>
+    <script type="module" src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.js"></script>
+    <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-auth.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-firestore.js";
+        const firebaseConfig = {
+            apiKey: "AIzaSyDilGcSEGWSZhHGPgwgOhohWCaVjxMQhqc",
+            authDomain: "trash-disposal-track.firebaseapp.com",
+            projectId: "trash-disposal-track",
+            storageBucket: "trash-disposal-track.appspot.com",
+            messagingSenderId: "684431471032",
+            appId: "1:684431471032:web:07c994f6bbd093e6e75f4d",
+            measurementId: "G-YCFGV6NLTS"
+        };
+        var stay = 1;
+
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const dataForm = document.getElementById("data-form");
+        const hassanValue = document.getElementById("hassan-counter");
+        const badrValue = document.getElementById("badr-counter");
+        const ziadValue = document.getElementById("ziad-counter");
+        const lastPersonValue = document.getElementById("last-person");
+        const lastDateValue = document.getElementById("last-date");
+        const currentTurnValue = document.getElementById("current-turn");
+        const dropdown = document.getElementById("dropdown");
+        startValues();
+        dataForm.addEventListener("submit", (e) => {
+            e.preventDefault();
+            const userConfirmation = window.confirm("Confirm Trash Disposal By " + dropdown.value + "?");
+            if (userConfirmation) {
+                const currentDate = new Date();
+                const currentDateTimeString = currentDate.toLocaleString();
+                incrementCounter(dropdown.value, "Original Flatmates", currentDateTimeString);
+            }
+
+        });
+
+        function incrementCounter(name, group, date) {
+            const collectionRef = firebase.firestore().collection(group);
+            const query = collectionRef.where("id", "==", group);
+            query.get().then((snapshot) => {
+                if (!snapshot.empty) {
+                    snapshot.forEach((doc) => {
+                        var hassanCounter = doc.data().hassanCounter;
+                        var badrCounter = doc.data().badrCounter;
+                        var ziadCounter = doc.data().ziadCounter;
+                        if (name == "Hassan") {
+                            hassanCounter++;
+                            if (hassanCounter == 1 && badrCounter > 0 && ziadCounter > 0) {
+                                ziadCounter = ziadCounter - 1;
+                                badrCounter = badrCounter - 1;
+                                hassanCounter = 0;
+                            }
+                        }
+                        else if (name == "Badr") {
+                            badrCounter++;
+                            if (badrCounter == 1 && hassanCounter > 0 && ziadCounter > 0) {
+                                hassanCounter = hassanCounter - 1;
+                                ziadCounter = ziadCounter - 1;
+                                badrCounter = 0;
+                            }
+                        }
+                        else if (name == "Ziad") {
+                            ziadCounter++;
+                            if (ziadCounter == 1 && badrCounter > 0 && hassanCounter > 0) {
+                                hassanCounter = hassanCounter - 1;
+                                badrCounter = badrCounter - 1;
+                                ziadCounter = 0;
+                            }
+                        }
+
+                        doc.ref.update({
+                            lastDate: date,
+                            lastPerson: name,
+                            hassanCounter: hassanCounter,
+                            ziadCounter: ziadCounter,
+                            badrCounter: badrCounter
+                        });
+                        hassanValue.textContent = hassanCounter;
+                        badrValue.textContent = badrCounter;
+                        ziadValue.textContent = ziadCounter;
+                        lastPersonValue.textContent = name;
+                        lastDateValue.textContent = date;
+                        if (hassanCounter == 0 && badrCounter == 0 && ziadCounter == 0) {
+                            currentTurnValue.textContent = "Anyone"
+                        }
+                        else if (badrCounter <= hassanCounter && badrCounter <= ziadCounter) {
+                            currentTurnValue.textContent = "Badr"
+                        }
+                        else if (ziadCounter <= hassanCounter && ziadCounter <= badrCounter) {
+                            currentTurnValue.textContent = "Ziad"
+                        }
+                        else if (hassanCounter <= ziadCounter && hassanCounter <= badrCounter) {
+                            currentTurnValue.textContent = "Hassan"
+                        }
+                    });
+                }
+            }).catch((error) => {
+                console.log(error);
+                alert("Error: " + error);
+            });
+
+
+        }
+
+        function startValues() {
+            const collectionRef = firebase.firestore().collection("Original Flatmates");
+            const query = collectionRef.where("id", "==", "Original Flatmates");
+            query.get().then((snapshot) => {
+                if (!snapshot.empty) {
+                    snapshot.forEach((doc) => {
+                        hassanValue.textContent = doc.data().hassanCounter;
+                        badrValue.textContent = doc.data().badrCounter;
+                        ziadValue.textContent = doc.data().ziadCounter;
+                        lastPersonValue.textContent = doc.data().lastPerson;
+                        lastDateValue.textContent = doc.data().lastDate;
+
+                        if (doc.data().hassanCounter == 0 && doc.data().badrCounter == 0 && doc.data().ziadCounter == 0) {
+                            currentTurnValue.textContent = "Anyone"
+                        }
+                        else if (doc.data().badrCounter <= doc.data().hassanCounter && doc.data().badrCounter <= doc.data().ziadCounter) {
+                            currentTurnValue.textContent = "Badr"
+                        }
+                        else if (doc.data().ziadCounter <= doc.data().hassanCounter && doc.data().ziadCounter <= doc.data().badrCounter) {
+                            currentTurnValue.textContent = "Ziad"
+                        }
+                        else if (doc.data().hassanCounter <= doc.data().ziadCounter && doc.data().hassanCounter <= doc.data().badrCounter) {
+                            currentTurnValue.textContent = "Hassan"
+                        }
+
+                    });
+                }
+
+            }).catch((error) => {
+                console.log(error);
+                alert("Error: " + error);
+            });
+        }
+
+    </script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            text-align: center;
+            background-color: #333;
+            color: white;
+            padding: 20px;
+        }
+
+        form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            max-width: 300px;
+            margin: 0 auto;
+        }
+
+        label,
+        select {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        select {
+            width: 100%;
+            padding: 5px;
+        }
+
+        button[type="submit"] {
+            display: block;
+            background-color: #333;
+            color: white;
+            border: none;
+            padding: 10px;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid #999;
+            margin: 20px 0;
+        }
+
+        div {
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+            margin-bottom: 10px;
+        }
+
+        div span {
+            font-weight: bold;
+        }
+    </style>
+
+</head>
+
+<body>
+    <h1>Flatmates Trash Tracker</h1>
+    <form id="data-form">
+        <label for="dropdown">Name:</label>
+        <select id="dropdown">
+            <option value="Hassan">Hassan</option>
+            <option value="Badr">Badr</option>
+            <option value="Ziad">Ziad</option>
+        </select>
+        <button type="submit">Submit Disposal</button>
+    </form>
+    <hr>
+    <div>
+        Current Turn: <span id="current-turn">Loading ...</span>
+    </div>
+    <div>
+        Last Person: <span id="last-person">Loading ...</span>
+    </div>
+    <div id="last-datsse">
+        Last Date: <span id="last-date">Loading ...</span>
+    </div>
+    <div>
+        Hassan Counter: <span id="hassan-counter">Loading ...</span>
+    </div>
+    <div>
+        Badr Counter: <span id="badr-counter">Loading ...</span>
+    </div>
+    <div>
+        Ziad Counter: <span id="ziad-counter">Loading ...</span>
+    </div>
+
+</body>
+
+</html>
