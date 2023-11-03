@@ -99,14 +99,23 @@
                         if (hassanCounter == 0 && badrCounter == 0 && ziadCounter == 0) {
                             currentTurnValue.textContent = "Anyone"
                         }
-                        else if (badrCounter <= hassanCounter && badrCounter <= ziadCounter) {
+                        else if (badrCounter < hassanCounter && badrCounter < ziadCounter) {
                             currentTurnValue.textContent = "Badr"
                         }
-                        else if (ziadCounter <= hassanCounter && ziadCounter <= badrCounter) {
+                        else if (ziadCounter < hassanCounter && ziadCounter < badrCounter) {
                             currentTurnValue.textContent = "Ziad"
                         }
-                        else if (hassanCounter <= ziadCounter && hassanCounter <= badrCounter) {
+                        else if (hassanCounter < ziadCounter && hassanCounter < badrCounter) {
                             currentTurnValue.textContent = "Hassan"
+                        }
+                        else if (hassanCounter == ziadCounter) {
+                            currentTurnValue.textContent = "Hassan or Ziad"
+                        }
+                        else if (hassanCounter == badrCounter) {
+                            currentTurnValue.textContent = "Hassan or Badr"
+                        }
+                        else if (ziadCounter == badrCounter) {
+                            currentTurnValue.textContent = "Badr or Ziad"
                         }
                     });
                 }
@@ -133,14 +142,23 @@
                         if (doc.data().hassanCounter == 0 && doc.data().badrCounter == 0 && doc.data().ziadCounter == 0) {
                             currentTurnValue.textContent = "Anyone"
                         }
-                        else if (doc.data().badrCounter <= doc.data().hassanCounter && doc.data().badrCounter <= doc.data().ziadCounter) {
+                        else if (doc.data().badrCounter < doc.data().hassanCounter && doc.data().badrCounter < doc.data().ziadCounter) {
                             currentTurnValue.textContent = "Badr"
                         }
-                        else if (doc.data().ziadCounter <= doc.data().hassanCounter && doc.data().ziadCounter <= doc.data().badrCounter) {
+                        else if (doc.data().ziadCounter < doc.data().hassanCounter && doc.data().ziadCounter < doc.data().badrCounter) {
                             currentTurnValue.textContent = "Ziad"
                         }
-                        else if (doc.data().hassanCounter <= doc.data().ziadCounter && doc.data().hassanCounter <= doc.data().badrCounter) {
+                        else if (doc.data().hassanCounter < doc.data().ziadCounter && doc.data().hassanCounter < doc.data().badrCounter) {
                             currentTurnValue.textContent = "Hassan"
+                        }
+                        else if (doc.data().hassanCounter == doc.data().ziadCounter) {
+                            currentTurnValue.textContent = "Hassan or Ziad"
+                        }
+                        else if (doc.data().hassanCounter == doc.data().badrCounter) {
+                            currentTurnValue.textContent = "Hassan or Badr"
+                        }
+                        else if (doc.data().ziadCounter == doc.data().badrCounter) {
+                            currentTurnValue.textContent = "Badr or Ziad"
                         }
 
                     });
@@ -235,7 +253,7 @@
         Current Turn: <span id="current-turn">Loading ...</span>
     </div>
     <div>
-        Last Person: <span id="last-person">Loading ...</span>
+        Last Disposal: <span id="last-person">Loading ...</span>
     </div>
     <div id="last-datsse">
         Last Date: <span id="last-date">Loading ...</span>
